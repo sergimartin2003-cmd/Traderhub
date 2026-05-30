@@ -94,20 +94,23 @@ interface ChatContainerProps {
   isPro?: boolean
   remaining?: number
   onUpgrade?: () => void
+  onConversationCreate?: (title: string) => Promise<string | undefined>
   brandName?: string
 }
 
 // ─── ChatContainer ────────────────────────────────────────────────────────────
 
 export function ChatContainer({
-  conversationId,
+  conversationId: initialConversationId,
   initialMessages = [],
   context,
   isPro = false,
   remaining = 10,
   onUpgrade,
+  onConversationCreate,
   brandName = 'Norte',
 }: ChatContainerProps) {
+  const [conversationId, setConversationId] = useState(initialConversationId)
   const [messages, setMessages] = useState<LocalMessage[]>(() =>
     initialMessages.map((m) => ({
       id: m.id,
@@ -147,6 +150,16 @@ export function ChatContainer({
       setIsLoading(true)
       setRateLimited(false)
 
+      // Auto-create conversation on first message if not yet created
+      let activeConversationId = conversationId
+      if (!activeConversationId && onConversationCreate) {
+        const title = text.slice(0, 80)
+        activeConversationId = await onConversationCreate(title)
+        if (activeConversationId) {
+          setConversationId(activeConversationId)
+        }
+      }
+
       try {
         const history = [...messages, userMsg].map((m) => ({
           role: m.role,
@@ -158,7 +171,7 @@ export function ChatContainer({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: history,
-            conversationId,
+            conversationId: activeConversationId,
             context,
           }),
         })
@@ -234,7 +247,7 @@ export function ChatContainer({
         setIsLoading(false)
       }
     },
-    [messages, isLoading, isPro, remaining, conversationId, context, onUpgrade]
+    [messages, isLoading, isPro, remaining, conversationId, context, onUpgrade, onConversationCreate]
   )
 
   const handleSuggestion = (text: string) => {

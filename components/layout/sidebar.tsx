@@ -11,7 +11,7 @@ import { Icon } from '@/components/icons'
 interface Conversation {
   id: string
   title: string
-  context?: string
+  context?: string | null
 }
 
 interface Profile {
@@ -110,8 +110,8 @@ export function Sidebar({
   const navItems = [
     { icon: 'home', label: 'Inicio', href: '/dashboard' },
     { icon: 'chat', label: 'Chat', href: '/dashboard/chat' },
-    { icon: 'tools', label: 'Herramientas', href: '/tools' },
-    { icon: 'folder', label: 'Proyectos', href: '/projects' },
+    { icon: 'tools', label: 'Herramientas', href: '/dashboard/tools' },
+    { icon: 'folder', label: 'Proyectos', href: '/dashboard/projects' },
   ]
 
   return (
@@ -153,9 +153,7 @@ export function Sidebar({
             label={item.label}
             href={item.href}
             active={
-              item.href === '/dashboard/chat'
-                ? onNewChat !== undefined && currentPath.startsWith('/chat')
-                : currentPath === item.href || currentPath.startsWith(item.href + '/')
+              currentPath === item.href || currentPath.startsWith(item.href + '/')
             }
           />
         ))}
@@ -194,7 +192,7 @@ export function Sidebar({
             <ConvItem
               key={conv.id}
               conv={conv}
-              active={currentPath === `/chat/${conv.id}`}
+              active={currentPath === `/dashboard/chat/${conv.id}`}
             />
           ))
         )}
@@ -263,7 +261,7 @@ export function Sidebar({
 
       {/* User info at bottom */}
       <Link
-        href="/settings"
+        href="/dashboard/settings"
         className="focusable"
         style={{
           display: 'flex',

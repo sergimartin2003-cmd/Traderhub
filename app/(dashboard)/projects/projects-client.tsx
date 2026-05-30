@@ -41,7 +41,7 @@ export default function ProjectsClient({ projects }: ProjectsClientProps) {
           <p style={{ margin: '0 auto 18px', fontSize: 14.5, color: 'var(--ink-3)', maxWidth: 320, lineHeight: 1.5 }}>
             Usa una herramienta y guarda el resultado para verlo aquí.
           </p>
-          <Link href="/tools">
+          <Link href="/dashboard/tools">
             <Button variant="primary" icon="tools">Ir a herramientas</Button>
           </Link>
         </Card>

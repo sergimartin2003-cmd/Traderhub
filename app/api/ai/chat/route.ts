@@ -123,6 +123,11 @@ export async function POST(req: NextRequest) {
             const lastReset = usage?.last_reset?.split('T')[0]
             const isNewDay = lastReset !== today
 
+            // Check for monthly reset (first day of month)
+            const thisMonth = today.slice(0, 7) // "YYYY-MM"
+            const lastMonth = lastReset?.slice(0, 7)
+            const isNewMonth = lastMonth !== thisMonth
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const db = supabase as any
             if (usage) {
@@ -130,9 +135,9 @@ export async function POST(req: NextRequest) {
                 .from('usage_tracking')
                 .update({
                   daily_messages: isNewDay ? 1 : (usage.daily_messages + 1),
-                  monthly_messages: (usage.monthly_messages ?? 0) + 1,
+                  monthly_messages: isNewMonth ? 1 : ((usage.monthly_messages ?? 0) + 1),
                   total_messages: (usage.total_messages ?? 0) + 1,
-                  last_reset: isNewDay ? new Date().toISOString() : usage.last_reset,
+                  last_reset: isNewDay ? today : usage.last_reset,
                   updated_at: new Date().toISOString(),
                 })
                 .eq('user_id', user.id)
@@ -144,7 +149,7 @@ export async function POST(req: NextRequest) {
                   daily_messages: 1,
                   monthly_messages: 1,
                   total_messages: 1,
-                  last_reset: new Date().toISOString(),
+                  last_reset: today,
                 })
             }
 

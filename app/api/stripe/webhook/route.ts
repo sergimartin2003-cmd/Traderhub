@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { handleWebhookEvent, stripe } from '@/lib/stripe/server'
+import { sendPremiumActivatedEmail, sendSubscriptionCancelledEmail } from '@/lib/resend/client'
 import type { Database, Subscription } from '@/types'
 import type Stripe from 'stripe'
 
@@ -61,6 +62,20 @@ export async function POST(req: NextRequest) {
             },
             { onConflict: 'user_id' }
           )
+
+        // Send upgrade confirmation email
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: profile } = await (supabase as any)
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .single()
+          if (profile?.email) {
+            await sendPremiumActivatedEmail(profile.email, profile.full_name ?? 'Emprendedor')
+          }
+        } catch { /* non-fatal */ }
+
         break
       }
 
@@ -102,7 +117,7 @@ export async function POST(req: NextRequest) {
         const customerId = subscription.customer as string
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        const { data: subRow } = await (supabase as any)
           .from('subscriptions')
           .update({
             plan: 'free',
@@ -111,6 +126,24 @@ export async function POST(req: NextRequest) {
             current_period_end: null,
           })
           .eq('stripe_customer_id', customerId)
+          .select('user_id')
+          .single()
+
+        // Send cancellation email
+        try {
+          if (subRow?.user_id) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { data: profile } = await (supabase as any)
+              .from('profiles')
+              .select('email, full_name')
+              .eq('id', subRow.user_id)
+              .single()
+            if (profile?.email) {
+              await sendSubscriptionCancelledEmail(profile.email, profile.full_name ?? 'Emprendedor')
+            }
+          }
+        } catch { /* non-fatal */ }
+
         break
       }
 

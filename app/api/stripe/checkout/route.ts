@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       success_url:
-        successUrl ?? `${appUrl}/dashboard?upgraded=true`,
-      cancel_url: cancelUrl ?? `${appUrl}/dashboard`,
+        successUrl ?? `${appUrl}/dashboard/billing?success=true`,
+      cancel_url: cancelUrl ?? `${appUrl}/upgrade?canceled=true`,
       metadata: { userId: user.id },
       allow_promotion_codes: true,
     })

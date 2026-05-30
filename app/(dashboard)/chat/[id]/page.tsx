@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { ChatContainer } from '@/components/chat/chat-container'
+import { ChatPageClient } from './chat-page-client'
 import { FREE_DAILY_LIMIT } from '@/lib/constants'
 import type { Message } from '@/types'
 
@@ -18,7 +18,6 @@ export default async function ConversationPage({ params }: Props) {
 
   if (!user) redirect('/login')
 
-  // Fetch conversation + messages in parallel with subscription/usage
   const [convRes, messagesRes, subscriptionRes, usageRes] = await Promise.all([
     supabase
       .from('conversations')
@@ -38,9 +37,9 @@ export default async function ConversationPage({ params }: Props) {
       .single<{ plan: string; status: string }>(),
     supabase
       .from('usage_tracking')
-      .select('daily_messages')
+      .select('daily_messages, last_reset')
       .eq('user_id', user.id)
-      .single<{ daily_messages: number }>(),
+      .single<{ daily_messages: number; last_reset: string }>(),
   ])
 
   if (!convRes.data) notFound()
@@ -52,12 +51,14 @@ export default async function ConversationPage({ params }: Props) {
     subscriptionRes.data?.plan === 'pro' &&
     (subscriptionRes.data?.status === 'active' || subscriptionRes.data?.status === 'trialing')
 
-  const dailyMessages = usageRes.data?.daily_messages ?? 0
+  const today = new Date().toISOString().split('T')[0]
+  const lastReset = usageRes.data?.last_reset?.split('T')[0]
+  const dailyMessages = lastReset === today ? (usageRes.data?.daily_messages ?? 0) : 0
   const remaining = Math.max(0, FREE_DAILY_LIMIT - dailyMessages)
 
   return (
     <div style={{ height: '100%' }}>
-      <ChatContainer
+      <ChatPageClient
         conversationId={id}
         initialMessages={messages}
         context={conversation.context ?? undefined}

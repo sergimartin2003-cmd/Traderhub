@@ -5,11 +5,18 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { MobileBar, MobileHeader } from '@/components/layout/mobile-nav'
 import type { Profile, Subscription } from '@/types'
 
+interface SidebarConversation {
+  id: string
+  title: string
+  context?: string | null
+}
+
 interface DashboardShellProps {
   user: { id: string; email: string }
   profile: Profile | null
   subscription: Subscription | null
   isPro: boolean
+  conversations?: SidebarConversation[]
   children: React.ReactNode
 }
 
@@ -17,6 +24,7 @@ export default function DashboardShell({
   user,
   profile,
   isPro,
+  conversations = [] as SidebarConversation[],
   children,
 }: DashboardShellProps) {
   const pathname = usePathname()
@@ -52,6 +60,7 @@ export default function DashboardShell({
         currentPath={pathname}
         isPro={isPro}
         user={sidebarUser}
+        conversations={conversations}
         onNewChat={handleNewChat}
         onUpgrade={handleUpgrade}
       />
