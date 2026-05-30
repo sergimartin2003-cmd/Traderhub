@@ -6,7 +6,9 @@
 
 ## EXECUTIVE SUMMARY
 
-The Next.js migration is 85% complete. Authentication, database schema, AI streaming, and Stripe are all properly architected. However, there are **10 P0 critical blockers** that prevent the app from working end-to-end for real users. Most are simple wiring issues (missing pages, wrong paths, missing callbacks), not architectural problems.
+**Status: Production-ready ✅** — All P0 and P1 items resolved (2026-05-30).
+
+Authentication, database schema, AI streaming, Stripe, Resend, Sentry, and PostHog are all fully wired. The app is deployable end-to-end with a complete Stripe subscription lifecycle, real-time AI chat with usage gating, transactional emails on all key events, error monitoring, and analytics with conversion events.
 
 ---
 
@@ -133,15 +135,18 @@ P1:
 |---|---|---|
 | Auth (Supabase) | ✅ Working | Email + Google OAuth, middleware-protected |
 | Database schema | ✅ Complete | 10 tables, RLS, triggers, indexes |
-| AI streaming | ✅ Working | OpenRouter, SSE, rate limiting |
-| Stripe checkout | ✅ Working | Needs /upgrade page wired |
-| Stripe webhooks | ✅ Working | Subscription sync correct |
-| Email (Resend) | ⚠️ Implemented, not triggered | Missing call sites |
-| Sidebar nav | ❌ Wrong paths | 3 broken links |
-| New chat persistence | ❌ Missing | No conversation created |
-| Tool page | ❌ Callbacks missing | Back/save/upgrade dead |
-| Upgrade page | ❌ Missing | 404 everywhere |
-| Billing page | ❌ Missing | Stripe redirect 404 |
-| Project delete | ❌ API route missing | 404 on delete |
-| Sentry | ❌ Not configured | Zero error monitoring |
-| Analytics events | ⚠️ SDK loaded only | No custom events |
+| AI streaming | ✅ Working | OpenRouter, SSE, rate limiting, daily/monthly reset |
+| Stripe checkout | ✅ Working | /upgrade page + billing page wired |
+| Stripe webhooks | ✅ Working | Subscription sync + email triggers |
+| Email (Resend) | ✅ Working | Welcome, upgrade, cancellation emails firing |
+| Sidebar nav | ✅ Fixed | All paths use /dashboard/* prefix |
+| New chat persistence | ✅ Fixed | Auto-creates conversation + updates URL |
+| Tool page | ✅ Fixed | Client wrappers with back/save/upgrade callbacks |
+| Upgrade page | ✅ Created | /upgrade with pricing cards, monthly/annual toggle |
+| Billing page | ✅ Created | /dashboard/billing with portal button |
+| Project delete | ✅ Fixed | DELETE /api/user/projects/[id] route created |
+| Sentry | ✅ Configured | client/server/edge configs + next.config.ts wrapper |
+| Analytics events | ✅ Working | Conversion events: message, upgrade, tool, project |
+| OG image | ✅ Fixed | Dynamic edge-generated /og-image.png route |
+| SEO | ✅ Added | sitemap.ts + robots.ts |
+| PWA | ✅ Added | manifest.json with Norte branding |
