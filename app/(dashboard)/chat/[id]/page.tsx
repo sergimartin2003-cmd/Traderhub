@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ChatContainer } from '@/components/chat/chat-container'
+import { FREE_DAILY_LIMIT } from '@/lib/constants'
 import type { Message } from '@/types'
 
 interface Props {
@@ -52,7 +53,7 @@ export default async function ConversationPage({ params }: Props) {
     (subscriptionRes.data?.status === 'active' || subscriptionRes.data?.status === 'trialing')
 
   const dailyMessages = usageRes.data?.daily_messages ?? 0
-  const remaining = Math.max(0, 10 - dailyMessages)
+  const remaining = Math.max(0, FREE_DAILY_LIMIT - dailyMessages)
 
   return (
     <div style={{ height: '100%' }}>

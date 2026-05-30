@@ -36,7 +36,7 @@ export default async function NewChatPage({ searchParams }: Props) {
     (subscription?.status === 'active' || subscription?.status === 'trialing')
 
   const dailyMessages = usage?.daily_messages ?? 0
-  const remaining = Math.max(0, 10 - dailyMessages)
+  const remaining = Math.max(0, FREE_DAILY_LIMIT - dailyMessages)
 
   return (
     <div style={{ height: '100%' }}>

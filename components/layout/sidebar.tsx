@@ -109,7 +109,7 @@ export function Sidebar({
 
   const navItems = [
     { icon: 'home', label: 'Inicio', href: '/dashboard' },
-    { icon: 'chat', label: 'Chat', href: '/chat' },
+    { icon: 'chat', label: 'Chat', href: '/dashboard/chat' },
     { icon: 'tools', label: 'Herramientas', href: '/tools' },
     { icon: 'folder', label: 'Proyectos', href: '/projects' },
   ]
@@ -153,7 +153,7 @@ export function Sidebar({
             label={item.label}
             href={item.href}
             active={
-              item.href === '/chat'
+              item.href === '/dashboard/chat'
                 ? onNewChat !== undefined && currentPath.startsWith('/chat')
                 : currentPath === item.href || currentPath.startsWith(item.href + '/')
             }
@@ -295,7 +295,7 @@ function ConvItem({ conv, active }: { conv: Conversation; active: boolean }) {
 
   return (
     <Link
-      href={`/chat/${conv.id}`}
+      href={`/dashboard/chat/${conv.id}`}
       className="focusable"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
