@@ -6,6 +6,8 @@ import { Icon } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TOOLS } from '@/lib/constants'
+import { deleteProject } from '@/actions/projects'
+import { toast } from 'sonner'
 import type { Project } from '@/types'
 
 const TOOL_MAP = Object.fromEntries(TOOLS.map((t) => [t.id, t]))
@@ -17,13 +19,19 @@ interface ProjectsClientProps {
 
 export default function ProjectsClient({ projects }: ProjectsClientProps) {
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [localProjects, setLocalProjects] = useState(projects)
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este proyecto?')) return
     setDeleting(id)
-    await fetch(`/api/user/projects/${id}`, { method: 'DELETE' })
+    const result = await deleteProject(id)
+    if (result && 'error' in result) {
+      toast.error(result.error)
+    } else {
+      setLocalProjects(prev => prev.filter(p => p.id !== id))
+      toast.success('Proyecto eliminado')
+    }
     setDeleting(null)
-    window.location.reload()
   }
 
   return (
@@ -32,7 +40,7 @@ export default function ProjectsClient({ projects }: ProjectsClientProps) {
         Proyectos guardados
       </h1>
 
-      {projects.length === 0 ? (
+      {localProjects.length === 0 ? (
         <Card style={{ padding: 40, textAlign: 'center' }}>
           <div style={{ width: 56, height: 56, borderRadius: 'var(--r-lg)', background: 'var(--surface-3)', color: 'var(--ink-4)', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}>
             <Icon name="folder" size={28} />
@@ -41,13 +49,13 @@ export default function ProjectsClient({ projects }: ProjectsClientProps) {
           <p style={{ margin: '0 auto 18px', fontSize: 14.5, color: 'var(--ink-3)', maxWidth: 320, lineHeight: 1.5 }}>
             Usa una herramienta y guarda el resultado para verlo aquí.
           </p>
-          <Link href="/tools">
+          <Link href="/dashboard/tools">
             <Button variant="primary" icon="tools">Ir a herramientas</Button>
           </Link>
         </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
-          {projects.map((p) => {
+          {localProjects.map((p) => {
             const tool = TOOL_MAP[p.type] ?? { icon: 'doc', accent: '#10B981', name: p.type }
             return (
               <Card key={p.id} hover style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 130, position: 'relative' }}>

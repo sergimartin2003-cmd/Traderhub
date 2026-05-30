@@ -4,6 +4,7 @@ import type { Database } from '@/types/database'
 
 const PROTECTED_PATHS = ['/dashboard', '/chat', '/projects', '/settings', '/tools']
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password']
+const VERIFY_PATHS = ['/verify-email']
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
@@ -11,6 +12,14 @@ function isProtectedPath(pathname: string) {
 
 function isAuthPath(pathname: string) {
   return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+}
+
+function isVerifyExempt(pathname: string) {
+  return (
+    VERIFY_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/')) ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/')
+  )
 }
 
 /**
@@ -48,6 +57,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+
+  // Redirect users with unverified email to verify-email page
+  if (user && !user.email_confirmed_at && !isVerifyExempt(pathname) && !isAuthPath(pathname)) {
+    const verifyUrl = request.nextUrl.clone()
+    verifyUrl.pathname = '/verify-email'
+    return NextResponse.redirect(verifyUrl)
+  }
 
   // Redirect unauthenticated users away from protected routes
   if (!user && isProtectedPath(pathname)) {

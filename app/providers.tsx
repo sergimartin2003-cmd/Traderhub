@@ -4,6 +4,7 @@ import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
 import { Toaster } from 'sonner'
+import { ThemeProvider } from 'next-themes'
 
 export function PostHogProviderWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -22,41 +23,34 @@ export function PostHogProviderWrapper({ children }: { children: React.ReactNode
 
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
+  const toasterProps = {
+    position: 'bottom-right' as const,
+    toastOptions: {
+      style: {
+        fontFamily: 'var(--font-display)',
+        borderRadius: 'var(--r-md)',
+        border: '1px solid var(--line)',
+        background: 'var(--surface)',
+        color: 'var(--ink)',
+      },
+    },
+  }
+
   if (!key) {
     return (
-      <>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              fontFamily: 'var(--font-display)',
-              borderRadius: 'var(--r-md)',
-              border: '1px solid var(--line)',
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-            },
-          }}
-        />
-      </>
+        <Toaster {...toasterProps} />
+      </ThemeProvider>
     )
   }
 
   return (
-    <PostHogProvider client={posthog}>
-      {children}
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            fontFamily: 'var(--font-display)',
-            borderRadius: 'var(--r-md)',
-            border: '1px solid var(--line)',
-            background: 'var(--surface)',
-            color: 'var(--ink)',
-          },
-        }}
-      />
-    </PostHogProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <PostHogProvider client={posthog}>
+        {children}
+        <Toaster {...toasterProps} />
+      </PostHogProvider>
+    </ThemeProvider>
   )
 }

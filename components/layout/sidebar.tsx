@@ -110,8 +110,8 @@ export function Sidebar({
   const navItems = [
     { icon: 'home', label: 'Inicio', href: '/dashboard' },
     { icon: 'chat', label: 'Chat', href: '/dashboard/chat' },
-    { icon: 'tools', label: 'Herramientas', href: '/tools' },
-    { icon: 'folder', label: 'Proyectos', href: '/projects' },
+    { icon: 'tools', label: 'Herramientas', href: '/dashboard/tools' },
+    { icon: 'folder', label: 'Proyectos', href: '/dashboard/projects' },
   ]
 
   return (
@@ -263,7 +263,7 @@ export function Sidebar({
 
       {/* User info at bottom */}
       <Link
-        href="/settings"
+        href="/dashboard/settings"
         className="focusable"
         style={{
           display: 'flex',

@@ -72,6 +72,42 @@
   --gap-stack: 18px;
 }
 
+.dark {
+  --accent: #10B981;
+  --accent-600: #059669;
+  --accent-700: #34D399;
+  --accent-tint: rgba(16,185,129,0.12);
+  --accent-tint-2: rgba(16,185,129,0.20);
+  --accent-glow: rgba(16, 185, 129, 0.22);
+
+  --gold: #FBBF24;
+  --gold-bright: #F59E0B;
+  --gold-tint: rgba(251,191,36,0.10);
+  --gold-tint-2: rgba(251,191,36,0.18);
+
+  --canvas: #111110;
+  --surface: #1A1A19;
+  --surface-2: #242422;
+  --surface-3: #2E2E2C;
+  --ink: #F5F5F3;
+  --ink-2: #C8C8C2;
+  --ink-3: #8A8A84;
+  --ink-4: #5A5A56;
+  --line: #2E2E2C;
+  --line-2: #3A3A38;
+  --line-strong: #4A4A46;
+
+  --danger: #F87171;
+  --warn: #FBBF24;
+  --info: #60A5FA;
+
+  --sh-xs: 0 1px 2px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+  --sh-md: 0 4px 16px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
+  --sh-lg: 0 12px 32px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
+  --sh-xl: 0 24px 60px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 body {

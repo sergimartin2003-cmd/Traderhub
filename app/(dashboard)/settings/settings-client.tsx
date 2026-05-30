@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function SettingsClient({ profile, subscription, userEmail }: Props) {
-  const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const isPro = subscription?.plan === 'pro' && (subscription?.status === 'active' || subscription?.status === 'trialing')
 
   const [fullName, setFullName] = useState(profile?.full_name ?? '')
@@ -56,9 +56,7 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
   }
 
   const handleUpgrade = async () => {
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-      ? process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID
-      : null
+    const priceId = process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID
 
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
@@ -114,6 +112,60 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </Button>
           </div>
+        </div>
+      </Card>
+
+      {/* Apariencia */}
+      <Card style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Apariencia</h2>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {([
+            { value: 'system', label: 'Sistema', icon: (
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <rect x={2} y={3} width={20} height={14} rx={2} />
+                <path d="M8 21h8M12 17v4" strokeLinecap="round" />
+              </svg>
+            )},
+            { value: 'light', label: 'Claro', icon: (
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <circle cx={12} cy={12} r={5} />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round" />
+              </svg>
+            )},
+            { value: 'dark', label: 'Oscuro', icon: (
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )},
+          ] as const).map(({ value, label, icon }) => {
+            const active = theme === value
+            return (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '14px 12px',
+                  borderRadius: 'var(--r-md)',
+                  border: active ? '2px solid var(--accent)' : '1.5px solid var(--line-2)',
+                  background: active ? 'var(--accent-tint)' : 'var(--surface-2)',
+                  color: active ? 'var(--accent-700)' : 'var(--ink-3)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 13,
+                  fontWeight: active ? 700 : 500,
+                  transition: 'border-color .15s, background .15s, color .15s',
+                }}
+              >
+                {icon}
+                <span>{label}</span>
+              </button>
+            )
+          })}
         </div>
       </Card>
 
