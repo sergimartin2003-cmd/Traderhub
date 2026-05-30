@@ -51,14 +51,14 @@ export default function DashboardHome({
     const q = text ?? query
     if (!q.trim()) return
     const params = new URLSearchParams({ q: q.trim() })
-    router.push(`/dashboard/chat?${params.toString()}`)
+    router.push(`/chat?${params.toString()}`)
   }
 
   const handleOpenTool = (toolId: string, locked: boolean) => {
     if (locked) {
       router.push('/upgrade')
     } else {
-      router.push(`/dashboard/tools/${toolId}`)
+      router.push(`/tools/${toolId}`)
     }
   }
 
@@ -368,7 +368,7 @@ export default function DashboardHome({
               Proyectos guardados
             </h2>
             <Link
-              href="/dashboard/projects"
+              href="/projects"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -402,7 +402,7 @@ export default function DashboardHome({
             {projects.map((p) => (
               <Link
                 key={p.id}
-                href={`/dashboard/projects?id=${p.id}`}
+                href={`/projects?id=${p.id}`}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -494,7 +494,7 @@ export default function DashboardHome({
             {conversations.slice(0, 4).map((r, i) => (
               <Link
                 key={r.id}
-                href={`/dashboard/chat/${r.id}`}
+                href={`/chat/${r.id}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

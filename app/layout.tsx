@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { PostHogProviderWrapper } from './providers'
 
@@ -36,12 +36,15 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://norte.app'),
-  themeColor: '#10B981',
   manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#10B981',
 }
 
 export default function RootLayout({

@@ -56,14 +56,10 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
   }
 
   const handleUpgrade = async () => {
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-      ? process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID
-      : null
-
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId: priceId || 'price_monthly' }),
+      body: JSON.stringify({ plan: 'monthly' }),
     })
     const data = await res.json()
     if (data.url) window.location.href = data.url

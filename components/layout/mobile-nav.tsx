@@ -19,7 +19,7 @@ interface MobileHeaderProps {
 
 const NAV_ITEMS = [
   { view: 'dashboard', icon: 'home', label: 'Inicio', href: '/dashboard' },
-  { view: 'chat', icon: 'chat', label: 'Chat', href: '/dashboard/chat' },
+  { view: 'chat', icon: 'chat', label: 'Chat', href: '/chat' },
   { view: 'projects', icon: 'folder', label: 'Proyectos', href: '/projects' },
   { view: 'settings', icon: 'user', label: 'Perfil', href: '/settings' },
 ]
@@ -44,12 +44,9 @@ export function MobileBar({ currentPath, onNewChat }: MobileNavProps) {
       }}
     >
       {NAV_ITEMS.map((item) => {
-        const active =
-          item.href === '/dashboard/chat'
-            ? currentPath.startsWith('/chat')
-            : currentPath === item.href || currentPath.startsWith(item.href + '/')
+        const active = currentPath === item.href || currentPath.startsWith(item.href + '/')
 
-        if (item.href === '/dashboard/chat' && onNewChat) {
+        if (item.href === '/chat' && onNewChat) {
           return (
             <button
               key={item.view}
@@ -112,7 +109,7 @@ export function MobileHeader({
   onNewChat,
   currentPath = '/dashboard',
 }: MobileHeaderProps) {
-  const isDashboard = currentPath === '/dashboard' || currentPath === '/'
+  const isDashboard = currentPath === '/dashboard'
 
   return (
     <header

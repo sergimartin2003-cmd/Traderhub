@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ChatContainer } from '@/components/chat/chat-container'
+import { FREE_DAILY_LIMIT } from '@/lib/constants'
 
 interface Props {
   searchParams: Promise<{ q?: string }>

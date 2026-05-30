@@ -3,12 +3,13 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { MobileBar, MobileHeader } from '@/components/layout/mobile-nav'
-import type { Profile, Subscription } from '@/types'
+import type { Profile, Subscription, Conversation } from '@/types'
 
 interface DashboardShellProps {
   user: { id: string; email: string }
   profile: Profile | null
   subscription: Subscription | null
+  conversations?: Conversation[]
   isPro: boolean
   children: React.ReactNode
 }
@@ -17,13 +18,14 @@ export default function DashboardShell({
   user,
   profile,
   isPro,
+  conversations = [],
   children,
 }: DashboardShellProps) {
   const pathname = usePathname()
   const router = useRouter()
 
   const handleNewChat = () => {
-    router.push('/dashboard/chat')
+    router.push('/chat')
   }
 
   const handleUpgrade = () => {
@@ -52,6 +54,11 @@ export default function DashboardShell({
         currentPath={pathname}
         isPro={isPro}
         user={sidebarUser}
+        conversations={conversations.map((c) => ({
+          id: c.id,
+          title: c.title,
+          context: c.context ?? undefined,
+        }))}
         onNewChat={handleNewChat}
         onUpgrade={handleUpgrade}
       />

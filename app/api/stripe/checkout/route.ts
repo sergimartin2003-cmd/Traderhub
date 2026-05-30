@@ -4,8 +4,15 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe/server'
 import type { Subscription } from '@/types'
 
+const PLAN_PRICE_IDS: Record<string, string | undefined> = {
+  monthly: process.env.STRIPE_MONTHLY_PRICE_ID,
+  annual: process.env.STRIPE_ANNUAL_PRICE_ID,
+}
+
 const schema = z.object({
-  priceId: z.string(),
+  // Accept either a plan name ('monthly'|'annual') or a raw priceId
+  plan: z.enum(['monthly', 'annual']).optional(),
+  priceId: z.string().optional(),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
 })
@@ -32,7 +39,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-    const { priceId, successUrl, cancelUrl } = parsed.data
+    const { plan, priceId: rawPriceId, successUrl, cancelUrl } = parsed.data
+
+    // Resolve price ID: prefer plan name (server-side lookup) over raw priceId
+    const resolvedPriceId = plan ? PLAN_PRICE_IDS[plan] : rawPriceId
+
+    if (!resolvedPriceId) {
+      return NextResponse.json(
+        { error: 'Plan o precio no configurado' },
+        { status: 400 }
+      )
+    }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -67,11 +84,10 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: resolvedPriceId, quantity: 1 }],
       mode: 'subscription',
-      success_url:
-        successUrl ?? `${appUrl}/dashboard?upgraded=true`,
-      cancel_url: cancelUrl ?? `${appUrl}/dashboard`,
+      success_url: successUrl ?? `${appUrl}/settings?upgraded=true`,
+      cancel_url: cancelUrl ?? `${appUrl}/upgrade`,
       metadata: { userId: user.id },
       allow_promotion_codes: true,
     })

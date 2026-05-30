@@ -26,14 +26,10 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const handleCheckout = async () => {
     setLoading(true)
     try {
-      const priceId = annual
-        ? process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID
-        : process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID
-
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ plan: annual ? 'annual' : 'monthly' }),
       })
       const data = await res.json()
       if (data.url) {

@@ -6,6 +6,7 @@ import { Icon } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TOOLS } from '@/lib/constants'
+import { deleteProject } from '@/actions/projects'
 import type { Project } from '@/types'
 
 const TOOL_MAP = Object.fromEntries(TOOLS.map((t) => [t.id, t]))
@@ -21,7 +22,7 @@ export default function ProjectsClient({ projects }: ProjectsClientProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este proyecto?')) return
     setDeleting(id)
-    await fetch(`/api/user/projects/${id}`, { method: 'DELETE' })
+    await deleteProject(id)
     setDeleting(null)
     window.location.reload()
   }

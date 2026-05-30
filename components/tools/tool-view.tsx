@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { RichText, ScoreCard, LeanCanvas, DataTable, DualList, Checklist, AdCard } from '@/components/chat/chat-blocks'
 
 // ─── Tool configs ─────────────────────────────────────────────────────────────
@@ -517,6 +518,7 @@ interface ToolViewProps {
 }
 
 export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: ToolViewProps) {
+  const router = useRouter()
   const cfg = TOOL_CONFIGS[toolId]
 
   const [input, setInput] = useState<Record<string, string>>(() =>
@@ -620,7 +622,7 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
     >
       {/* Back button */}
       <button
-        onClick={onBack}
+        onClick={onBack ?? (() => router.push('/tools'))}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -763,7 +765,7 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
             Desbloquea esta herramienta y todas las premium con el plan Pro.
           </p>
           <button
-            onClick={onUpgrade}
+            onClick={onUpgrade ?? (() => router.push('/upgrade'))}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
