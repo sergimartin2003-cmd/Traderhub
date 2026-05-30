@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { EmptyChat } from './empty-chat'
 import { ChatInput } from './chat-input'
 import { ChatMessage, TypingDots } from './chat-message'
+import { useAnalytics } from '@/lib/posthog/events'
 import type { Message } from '@/types'
 
 // ─── Norte mark (inline, for typing indicator row) ───────────────────────────
@@ -122,6 +123,7 @@ export function ChatContainer({
   const [streamingId, setStreamingId] = useState<string | null>(null)
   const [rateLimited, setRateLimited] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { track } = useAnalytics()
 
   // Scroll to bottom whenever messages or loading state changes
   useEffect(() => {
@@ -135,9 +137,12 @@ export function ChatContainer({
       if (!text.trim() || isLoading) return
       if (!isPro && remaining <= 0) {
         setRateLimited(true)
+        track('upgrade_prompted', { reason: 'message_limit' })
         onUpgrade?.()
         return
       }
+
+      track('ai_message_sent', { is_pro: isPro, has_conversation: !!conversationId })
 
       const userMsg: LocalMessage = {
         id: 'u' + Date.now(),

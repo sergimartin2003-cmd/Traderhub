@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { MobileBar, MobileHeader } from '@/components/layout/mobile-nav'
+import { useAnalytics } from '@/lib/posthog/events'
 import type { Profile, Subscription } from '@/types'
 
 interface SidebarConversation {
@@ -29,12 +30,14 @@ export default function DashboardShell({
 }: DashboardShellProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { track } = useAnalytics()
 
   const handleNewChat = () => {
     router.push('/dashboard/chat')
   }
 
   const handleUpgrade = () => {
+    track('upgrade_clicked', { source: 'sidebar' })
     router.push('/upgrade')
   }
 

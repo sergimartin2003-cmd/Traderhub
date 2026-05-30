@@ -13,6 +13,7 @@ interface DashboardHomeProps {
   conversations: Conversation[]
   projects: Project[]
   dailyMessages: number
+  totalMessages?: number
 }
 
 const SUGGESTIONS = [
@@ -36,6 +37,7 @@ export default function DashboardHome({
   conversations,
   projects,
   dailyMessages,
+  totalMessages = 0,
 }: DashboardHomeProps) {
   const router = useRouter()
   const { profile, isPro } = useUser()
@@ -254,9 +256,9 @@ export default function DashboardHome({
         }}
       >
         <StatCard
-          icon="🔥"
-          label="Racha de actividad"
-          value="12 días"
+          icon="💬"
+          label="Total de mensajes"
+          value={String(totalMessages)}
           tone="gold"
         />
         <StatCard

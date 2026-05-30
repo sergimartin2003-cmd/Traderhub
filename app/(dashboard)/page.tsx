@@ -43,6 +43,7 @@ export default async function DashboardPage() {
       conversations={conversations}
       projects={projects}
       dailyMessages={usage?.daily_messages ?? 0}
+      totalMessages={usage?.total_messages ?? 0}
     />
   )
 }
