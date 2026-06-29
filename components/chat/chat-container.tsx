@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { EmptyChat } from './empty-chat'
 import { ChatInput } from './chat-input'
 import { ChatMessage, TypingDots } from './chat-message'
+import { createConversation } from '@/actions/chat'
 import type { Message } from '@/types'
 
 // ─── Norte mark (inline, for typing indicator row) ───────────────────────────
@@ -119,6 +121,13 @@ export function ChatContainer({
   const [streamingId, setStreamingId] = useState<string | null>(null)
   const [rateLimited, setRateLimited] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const convIdRef = useRef<string | undefined>(conversationId)
+
+  const goUpgrade = useCallback(() => {
+    if (onUpgrade) onUpgrade()
+    else router.push('/upgrade')
+  }, [onUpgrade, router])
 
   // Scroll to bottom whenever messages or loading state changes
   useEffect(() => {
@@ -132,7 +141,7 @@ export function ChatContainer({
       if (!text.trim() || isLoading) return
       if (!isPro && remaining <= 0) {
         setRateLimited(true)
-        onUpgrade?.()
+        goUpgrade()
         return
       }
 
@@ -147,6 +156,17 @@ export function ChatContainer({
       setIsLoading(true)
       setRateLimited(false)
 
+      // Create a conversation on the first message so history persists
+      let isNewConversation = false
+      if (!convIdRef.current) {
+        const title = text.trim().slice(0, 60)
+        const result = await createConversation(title, context)
+        if ('id' in result) {
+          convIdRef.current = result.id
+          isNewConversation = true
+        }
+      }
+
       try {
         const history = [...messages, userMsg].map((m) => ({
           role: m.role,
@@ -158,7 +178,7 @@ export function ChatContainer({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: history,
-            conversationId,
+            conversationId: convIdRef.current,
             context,
           }),
         })
@@ -166,7 +186,7 @@ export function ChatContainer({
         if (res.status === 429) {
           setRateLimited(true)
           setIsLoading(false)
-          onUpgrade?.()
+          goUpgrade()
           return
         }
 
@@ -232,9 +252,14 @@ export function ChatContainer({
       } finally {
         setStreamingId(null)
         setIsLoading(false)
+        // Sync URL with the freshly created conversation without remounting
+        if (isNewConversation && convIdRef.current) {
+          window.history.replaceState(null, '', `/dashboard/chat/${convIdRef.current}`)
+          router.refresh()
+        }
       }
     },
-    [messages, isLoading, isPro, remaining, conversationId, context, onUpgrade]
+    [messages, isLoading, isPro, remaining, context, goUpgrade, router]
   )
 
   const handleSuggestion = (text: string) => {
@@ -323,7 +348,7 @@ export function ChatContainer({
       </div>
 
       {/* Rate limit banner */}
-      {rateLimited && <UpgradeBanner onUpgrade={onUpgrade} />}
+      {rateLimited && <UpgradeBanner onUpgrade={goUpgrade} />}
 
       {/* Input */}
       <ChatInput
@@ -331,7 +356,7 @@ export function ChatContainer({
         disabled={isLoading}
         remaining={remaining}
         isPro={isPro}
-        onUpgrade={onUpgrade}
+        onUpgrade={goUpgrade}
         brandName={brandName}
       />
     </div>

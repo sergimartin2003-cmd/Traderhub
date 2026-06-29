@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   bio             text,
   trading_style   text,
   country         text,
+  business        text,
+  goal            text,
+  onboarded       boolean     NOT NULL DEFAULT false,
   created_at      timestamptz NOT NULL DEFAULT now(),
   updated_at      timestamptz NOT NULL DEFAULT now()
 );

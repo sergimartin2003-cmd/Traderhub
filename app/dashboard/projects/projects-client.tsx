@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Icon } from '@/components/icons'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TOOLS } from '@/lib/constants'
+import { deleteProject } from '@/actions/projects'
 import type { Project } from '@/types'
 
 const TOOL_MAP = Object.fromEntries(TOOLS.map((t) => [t.id, t]))
@@ -16,14 +18,16 @@ interface ProjectsClientProps {
 }
 
 export default function ProjectsClient({ projects }: ProjectsClientProps) {
+  const router = useRouter()
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este proyecto?')) return
     setDeleting(id)
-    await fetch(`/api/user/projects/${id}`, { method: 'DELETE' })
+    const res = await deleteProject(id)
     setDeleting(null)
-    window.location.reload()
+    if (res && 'error' in res) return
+    router.refresh()
   }
 
   return (
@@ -41,7 +45,7 @@ export default function ProjectsClient({ projects }: ProjectsClientProps) {
           <p style={{ margin: '0 auto 18px', fontSize: 14.5, color: 'var(--ink-3)', maxWidth: 320, lineHeight: 1.5 }}>
             Usa una herramienta y guarda el resultado para verlo aquí.
           </p>
-          <Link href="/tools">
+          <Link href="/dashboard/tools">
             <Button variant="primary" icon="tools">Ir a herramientas</Button>
           </Link>
         </Card>

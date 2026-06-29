@@ -8,7 +8,7 @@ export default async function ToolPage({ params }: { params: Promise<{ tool: str
   const { tool: toolId } = await params
 
   const tool = TOOLS.find((t) => t.id === toolId)
-  if (!tool) redirect('/tools')
+  if (!tool) redirect('/dashboard/tools')
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
