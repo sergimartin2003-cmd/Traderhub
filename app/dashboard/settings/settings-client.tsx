@@ -1,14 +1,41 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { Icon } from '@/components/icons'
 import { signOut } from '@/actions/auth'
+import { createClient } from '@/lib/supabase/client'
 import type { Profile, Subscription } from '@/types'
+
+const TRADING_STYLES = [
+  'Tengo solo una idea',
+  'Tengo un MVP o prototipo',
+  'Ya tengo un negocio en marcha',
+]
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '9px 12px',
+  border: '1.5px solid var(--line-2)',
+  borderRadius: 'var(--r-md)',
+  fontSize: 14.5,
+  background: 'var(--surface)',
+  color: 'var(--ink)',
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+}
+const fieldLabelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 13.5,
+  fontWeight: 600,
+  color: 'var(--ink-2)',
+  marginBottom: 6,
+}
 
 interface Props {
   profile: Profile | null
@@ -17,21 +44,29 @@ interface Props {
 }
 
 export default function SettingsClient({ profile, subscription, userEmail }: Props) {
-  const router = useRouter()
   const isPro = subscription?.plan === 'pro' && (subscription?.status === 'active' || subscription?.status === 'trialing')
 
   const [fullName, setFullName] = useState(profile?.full_name ?? '')
+  const [username, setUsername] = useState(profile?.username ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
+  const [tradingStyle, setTradingStyle] = useState(profile?.trading_style ?? '')
+  const [country, setCountry] = useState(profile?.country ?? '')
   const [saving, setSaving] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [pwLoading, setPwLoading] = useState(false)
 
   const handleSaveProfile = async () => {
     setSaving(true)
     try {
+      const payload: Record<string, string> = { full_name: fullName, bio }
+      if (username.trim()) payload.username = username.trim()
+      if (tradingStyle) payload.trading_style = tradingStyle
+      if (country.trim()) payload.country = country.trim()
+
       const res = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: fullName, bio }),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         toast.success('Perfil actualizado')
@@ -40,6 +75,20 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
       }
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    setPwLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (error) toast.error('No se pudo enviar el email')
+      else toast.success('Te hemos enviado un email para cambiar la contraseña')
+    } finally {
+      setPwLoading(false)
     }
   }
 
@@ -78,35 +127,45 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
 
       {/* Profile */}
       <Card style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Perfil</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <Avatar name={fullName || userEmail} size={52} src={profile?.avatar_url ?? undefined} />
+          <div>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Perfil</h2>
+            <p style={{ margin: '2px 0 0', fontSize: 13.5, color: 'var(--ink-4)' }}>{userEmail}</p>
+          </div>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: 'var(--ink-2)', marginBottom: 6 }}>
-              Email
-            </label>
-            <div style={{ fontSize: 14.5, color: 'var(--ink-3)' }}>{userEmail}</div>
+            <label style={fieldLabelStyle}>Nombre completo</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Tu nombre" style={inputStyle} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={fieldLabelStyle}>Usuario</label>
+              <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="usuario" style={inputStyle} />
+            </div>
+            <div>
+              <label style={fieldLabelStyle}>País</label>
+              <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="España" style={inputStyle} />
+            </div>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: 'var(--ink-2)', marginBottom: 6 }}>
-              Nombre completo
-            </label>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Tu nombre"
-              style={{ width: '100%', padding: '9px 12px', border: '1.5px solid var(--line-2)', borderRadius: 'var(--r-md)', fontSize: 14.5, background: 'var(--surface)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }}
-            />
+            <label style={fieldLabelStyle}>Punto de partida</label>
+            <select value={tradingStyle} onChange={(e) => setTradingStyle(e.target.value)} style={inputStyle}>
+              <option value="">Selecciona…</option>
+              {TRADING_STYLES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: 'var(--ink-2)', marginBottom: 6 }}>
-              Bio
-            </label>
+            <label style={fieldLabelStyle}>Bio</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Cuéntanos sobre tu negocio..."
               rows={3}
-              style={{ width: '100%', padding: '9px 12px', border: '1.5px solid var(--line-2)', borderRadius: 'var(--r-md)', fontSize: 14.5, background: 'var(--surface)', color: 'var(--ink)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
           <div>
@@ -154,6 +213,19 @@ export default function SettingsClient({ profile, subscription, userEmail }: Pro
             </div>
           </div>
         )}
+      </Card>
+
+      {/* Security */}
+      <Card style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Seguridad</h2>
+        <p style={{ margin: 0, fontSize: 14.5, color: 'var(--ink-3)' }}>
+          Te enviaremos un enlace seguro a tu email para establecer una contraseña nueva.
+        </p>
+        <div>
+          <Button variant="secondary" icon="lock" onClick={handleChangePassword} disabled={pwLoading}>
+            {pwLoading ? 'Enviando...' : 'Cambiar contraseña'}
+          </Button>
+        </div>
       </Card>
 
       {/* Sign out */}

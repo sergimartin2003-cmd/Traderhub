@@ -5,10 +5,17 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { MobileBar, MobileHeader } from '@/components/layout/mobile-nav'
 import type { Profile, Subscription } from '@/types'
 
+interface SidebarConversation {
+  id: string
+  title: string
+  context?: string | null
+}
+
 interface DashboardShellProps {
   user: { id: string; email: string }
   profile: Profile | null
   subscription: Subscription | null
+  conversations?: SidebarConversation[]
   isPro: boolean
   children: React.ReactNode
 }
@@ -16,6 +23,7 @@ interface DashboardShellProps {
 export default function DashboardShell({
   user,
   profile,
+  conversations = [],
   isPro,
   children,
 }: DashboardShellProps) {
@@ -50,6 +58,7 @@ export default function DashboardShell({
       {/* Desktop sidebar */}
       <Sidebar
         currentPath={pathname}
+        conversations={conversations.map((c) => ({ id: c.id, title: c.title, context: c.context ?? undefined }))}
         isPro={isPro}
         user={sidebarUser}
         onNewChat={handleNewChat}

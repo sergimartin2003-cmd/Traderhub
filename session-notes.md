@@ -24,6 +24,14 @@ Resend/PostHog/Sentry. Estado: app completa y funcional, faltan solo conexiones 
 - app/dashboard/projects/projects-client.tsx, app/dashboard/tools/[tool]/page.tsx
 - lib/supabase/middleware.ts (PROTECTED_PATHS = ['/dashboard','/upgrade'])
 
+## Sesión 2 — pulido a app completa
+- Sidebar ahora recibe conversaciones (layout las fetchea) + renombrar/borrar inline.
+- App Router robusto: error.tsx, global-error.tsx, not-found.tsx + loading.tsx (dashboard, chat/[id], projects, tools, settings).
+- Onboarding: columnas `business/goal/onboarded` en migración; /onboarding (3 pasos) + acción completeOnboarding; layout redirige nuevos usuarios; ruta protegida.
+- Settings ampliado: avatar, usuario, país, punto de partida (select), bio + tarjeta Seguridad (cambiar contraseña por email).
+- PWA: public/manifest.json + public/icon.svg.
+- Build: ✓ 22 rutas.
+
 ## Próximos pasos (solo conexiones)
 1. Crear proyecto Supabase, correr supabase/migrations/001_initial_schema.sql, rellenar URL+keys.
 2. OpenRouter API key.

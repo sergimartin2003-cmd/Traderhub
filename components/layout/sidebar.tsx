@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { deleteConversation, updateConversationTitle } from '@/actions/chat'
 import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
@@ -293,38 +295,135 @@ export function Sidebar({
 
 function ConvItem({ conv, active }: { conv: Conversation; active: boolean }) {
   const [hovered, setHovered] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [title, setTitle] = useState(conv.title)
+  const [busy, setBusy] = useState(false)
+  const router = useRouter()
+
+  const commitRename = async () => {
+    const next = title.trim()
+    setEditing(false)
+    if (!next || next === conv.title) {
+      setTitle(conv.title)
+      return
+    }
+    setBusy(true)
+    const res = await updateConversationTitle(conv.id, next)
+    setBusy(false)
+    if (res && 'error' in res) setTitle(conv.title)
+    else router.refresh()
+  }
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!confirm('¿Eliminar esta conversación?')) return
+    setBusy(true)
+    const res = await deleteConversation(conv.id)
+    setBusy(false)
+    if (!res || !('error' in res)) {
+      if (active) router.push('/dashboard/chat')
+      router.refresh()
+    }
+  }
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={title}
+        disabled={busy}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={commitRename}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commitRename()
+          if (e.key === 'Escape') {
+            setTitle(conv.title)
+            setEditing(false)
+          }
+        }}
+        style={{
+          width: '100%',
+          padding: '7px 10px',
+          borderRadius: 'var(--r-sm)',
+          fontSize: 13.5,
+          border: '1.5px solid var(--accent)',
+          background: 'var(--surface)',
+          color: 'var(--ink)',
+          outline: 'none',
+          fontFamily: 'inherit',
+          boxSizing: 'border-box',
+        }}
+      />
+    )
+  }
 
   return (
-    <Link
-      href={`/dashboard/chat/${conv.id}`}
-      className="focusable"
+    <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 9,
-        padding: '8px 11px',
+        gap: 4,
+        paddingRight: 4,
         borderRadius: 'var(--r-sm)',
-        fontSize: 13.5,
-        color: active ? 'var(--ink)' : 'var(--ink-3)',
-        background: active ? 'var(--surface-3)' : hovered ? 'var(--surface-3)' : 'transparent',
-        textAlign: 'left',
-        textDecoration: 'none',
+        background: active || hovered ? 'var(--surface-3)' : 'transparent',
         transition: 'background .14s',
+        opacity: busy ? 0.5 : 1,
       }}
     >
-      <span
+      <Link
+        href={`/dashboard/chat/${conv.id}`}
+        className="focusable"
         style={{
+          flex: 1,
+          minWidth: 0,
+          padding: '8px 11px',
+          fontSize: 13.5,
+          color: active ? 'var(--ink)' : 'var(--ink-3)',
+          textDecoration: 'none',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}
       >
         {conv.title}
-      </span>
-    </Link>
+      </Link>
+      {hovered && !busy && (
+        <>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setEditing(true)
+            }}
+            title="Renombrar"
+            aria-label="Renombrar"
+            style={iconBtnStyle}
+          >
+            <Icon name="edit" size={14} />
+          </button>
+          <button onClick={handleDelete} title="Eliminar" aria-label="Eliminar" style={iconBtnStyle}>
+            <Icon name="trash" size={14} />
+          </button>
+        </>
+      )}
+    </div>
   )
+}
+
+const iconBtnStyle: React.CSSProperties = {
+  width: 26,
+  height: 26,
+  flexShrink: 0,
+  display: 'grid',
+  placeItems: 'center',
+  borderRadius: 'var(--r-sm)',
+  color: 'var(--ink-4)',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
 }
 
 export default Sidebar

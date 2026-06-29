@@ -9,6 +9,9 @@ export interface Profile {
   bio: string | null
   trading_style: string | null
   country: string | null
+  business: string | null
+  goal: string | null
+  onboarded: boolean
   created_at: string
   updated_at: string
 }
