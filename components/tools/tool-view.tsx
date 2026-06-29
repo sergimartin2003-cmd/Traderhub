@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { RichText, ScoreCard, LeanCanvas, DataTable, DualList, Checklist, AdCard } from '@/components/chat/chat-blocks'
+import { createProject } from '@/actions/projects'
 
 // ─── Tool configs ─────────────────────────────────────────────────────────────
 
@@ -518,6 +520,10 @@ interface ToolViewProps {
 
 export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: ToolViewProps) {
   const cfg = TOOL_CONFIGS[toolId]
+  const router = useRouter()
+
+  const handleBack = onBack ?? (() => router.push('/dashboard/tools'))
+  const handleUpgrade = onUpgrade ?? (() => router.push('/upgrade'))
 
   const [input, setInput] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -528,6 +534,7 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [result, setResult] = useState<any>(null)
   const [saved, setSaved] = useState(false)
+  const [savingProject, setSavingProject] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const locked = cfg.pro && !isPro
@@ -620,7 +627,7 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
     >
       {/* Back button */}
       <button
-        onClick={onBack}
+        onClick={handleBack}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -763,7 +770,7 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
             Desbloquea esta herramienta y todas las premium con el plan Pro.
           </p>
           <button
-            onClick={onUpgrade}
+            onClick={handleUpgrade}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -900,17 +907,19 @@ export function ToolView({ toolId, isPro, onBack, onUpgrade, onSaveProject }: To
                   Resultado generado
                 </span>
                 <div style={{ flex: 1 }} />
-                {onSaveProject && (
+                {(
                   <button
-                    onClick={() => {
-                      if (!saved) {
-                        onSaveProject({
-                          name: result.title || cfg.name,
-                          tool: toolId,
-                          data: result,
-                        })
+                    onClick={async () => {
+                      if (saved || savingProject) return
+                      if (onSaveProject) {
+                        onSaveProject({ name: result.title || cfg.name, tool: toolId, data: result })
                         setSaved(true)
+                        return
                       }
+                      setSavingProject(true)
+                      const res = await createProject(result.title || cfg.name, toolId, result)
+                      setSavingProject(false)
+                      if (!('error' in res)) setSaved(true)
                     }}
                     style={{
                       display: 'inline-flex',
